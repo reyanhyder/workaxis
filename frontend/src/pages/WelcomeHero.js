@@ -14,8 +14,8 @@ import { auth, db } from '../firebase';
 import { signOut, updateProfile } from 'firebase/auth';
 import { collection, doc, getDoc, getDocs, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
 
-const WELCOME_HERO_IMAGE = 'https://images.unsplash.com/photo-1758773263238-1989d0cc788c?auto=format&fit=crop&w=2600&q=82';
-const WELCOME_IMAGE_SOURCE = 'https://unsplash.com/photos/person-working-on-laptop-at-night-with-city-view-g_ra59rIXDk';
+const WELCOME_HERO_IMAGE = 'https://images.pexels.com/photos/34549301/pexels-photo-34549301.jpeg?auto=compress&cs=tinysrgb&w=2600';
+const WELCOME_IMAGE_SOURCE = 'https://www.pexels.com/photo/modern-minimalist-home-office-interior-design-34549315/';
 
 const normalizeName = (value = '') => value.trim().replace(/\s+/g, ' ');
 
