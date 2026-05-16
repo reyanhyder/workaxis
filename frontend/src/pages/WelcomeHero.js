@@ -14,8 +14,8 @@ import { auth, db } from '../firebase';
 import { signOut, updateProfile } from 'firebase/auth';
 import { collection, doc, getDoc, getDocs, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
 
-const WELCOME_HERO_IMAGE = 'https://images.pexels.com/photos/34549301/pexels-photo-34549301.jpeg?auto=compress&cs=tinysrgb&w=2600';
-const WELCOME_IMAGE_SOURCE = 'https://www.pexels.com/photo/modern-minimalist-home-office-interior-design-34549315/';
+const WELCOME_HERO_IMAGE = 'https://images.pexels.com/photos/10772747/pexels-photo-10772747.jpeg?auto=compress&cs=tinysrgb&w=2600';
+const WELCOME_IMAGE_SOURCE = 'https://www.pexels.com/photo/black-and-white-photo-of-an-office-building-10772747/';
 
 const normalizeName = (value = '') => value.trim().replace(/\s+/g, ' ');
 
@@ -36,6 +36,15 @@ const getTimeGreeting = () => {
 
 const pickSessionIndex = (length) => Math.floor(Math.random() * length);
 
+const getViewportMode = () => {
+  if (typeof window === 'undefined') return 'desktop';
+  const width = window.innerWidth;
+  if (width <= 700) return 'mobile';
+  if (width <= 1024) return 'tablet';
+  if (width <= 1366) return 'laptop';
+  return 'desktop';
+};
+
 export default function WelcomeHero() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -48,6 +57,7 @@ export default function WelcomeHero() {
   const [preferredName, setPreferredName] = useState('');
   const [nameDraft, setNameDraft] = useState('');
   const [error, setError] = useState('');
+  const [viewportMode, setViewportMode] = useState(() => getViewportMode());
   const [phraseIndex] = useState(() => pickSessionIndex(8));
   const [workspaceStats, setWorkspaceStats] = useState({
     pendingTasks: 0,
@@ -124,6 +134,13 @@ export default function WelcomeHero() {
       tab: 'reports',
     },
   ]), [workspaceStats]);
+
+  useEffect(() => {
+    const handleResize = () => setViewportMode(getViewportMode());
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (!user) {
@@ -227,6 +244,12 @@ export default function WelcomeHero() {
     navigate('/dashboard', { state: { tab } });
   };
 
+  const isMobile = viewportMode === 'mobile';
+  const isTablet = viewportMode === 'tablet';
+  const isLaptop = viewportMode === 'laptop';
+  const compactViewport = isMobile || isTablet;
+  const midViewport = isTablet || isLaptop;
+
   if (loading) {
     return (
       <div style={w.root}>
@@ -237,27 +260,27 @@ export default function WelcomeHero() {
 
   if (needsName) {
     return (
-      <div style={w.root}>
-        <img src={WELCOME_HERO_IMAGE} alt="" style={w.bgImage} />
-        <div style={w.overlay} />
+      <div style={{ ...w.root, ...(compactViewport ? w.rootCompact : {}) }}>
+        <img src={WELCOME_HERO_IMAGE} alt="" style={{ ...w.bgImage, ...(compactViewport ? w.bgImageCompact : {}) }} />
+        <div style={{ ...w.overlay, ...(compactViewport ? w.overlayCompact : {}) }} />
         <div style={w.noise} />
 
-        <nav style={w.nav}>
-          <div style={w.brand}>
+        <nav style={{ ...w.nav, ...(midViewport ? w.navLaptop : {}), ...(compactViewport ? w.navCompact : {}) }}>
+          <div style={{ ...w.brand, ...(isMobile ? w.brandMobile : {}) }}>
             <span style={w.brandDot} />
             <span style={w.brandStrong}>WORK</span>
             <span style={w.logoSoft}>AXIS</span>
           </div>
-          <button type="button" onClick={logout} style={w.quietButton}>
+          <button type="button" onClick={logout} style={{ ...w.quietButton, ...(isMobile ? w.quietButtonMobile : {}) }}>
             <LogOut size={15} strokeWidth={1.8} />
             Sign out
           </button>
         </nav>
 
-        <main style={w.nameStage}>
-          <form onSubmit={saveName} style={w.namePanel}>
+        <main style={{ ...w.nameStage, ...(compactViewport ? w.nameStageCompact : {}) }}>
+          <form onSubmit={saveName} style={{ ...w.namePanel, ...(isMobile ? w.namePanelMobile : {}), ...(isTablet ? w.namePanelTablet : {}) }}>
             <div style={w.kicker}>PROFILE SETUP</div>
-            <h1 style={w.nameTitle}>What should WorkAxis call you?</h1>
+            <h1 style={{ ...w.nameTitle, ...(isMobile ? w.nameTitleMobile : {}), ...(isTablet ? w.nameTitleTablet : {}) }}>What should WorkAxis call you?</h1>
             <input
               autoFocus
               value={nameDraft}
@@ -279,52 +302,52 @@ export default function WelcomeHero() {
   }
 
   return (
-    <div style={w.root}>
-      <img src={WELCOME_HERO_IMAGE} alt="" style={w.bgImage} />
-      <div style={w.heroOverlay} />
+    <div style={{ ...w.root, ...(compactViewport ? w.rootCompact : {}) }}>
+      <img src={WELCOME_HERO_IMAGE} alt="" style={{ ...w.bgImage, ...(compactViewport ? w.bgImageCompact : {}) }} />
+      <div style={{ ...w.heroOverlay, ...(compactViewport ? w.heroOverlayCompact : {}), ...(isLaptop ? w.heroOverlayLaptop : {}) }} />
       <div style={w.noise} />
 
-      <nav style={w.nav}>
-        <div style={w.brand}>
+      <nav style={{ ...w.nav, ...(midViewport ? w.navLaptop : {}), ...(compactViewport ? w.navCompact : {}) }}>
+        <div style={{ ...w.brand, ...(isMobile ? w.brandMobile : {}) }}>
           <span style={w.brandDot} />
           <span style={w.brandStrong}>WORK</span>
           <span style={w.logoSoft}>AXIS</span>
         </div>
-        <button type="button" onClick={logout} style={w.quietButton}>
+        <button type="button" onClick={logout} style={{ ...w.quietButton, ...(isMobile ? w.quietButtonMobile : {}) }}>
           <LogOut size={15} strokeWidth={1.8} />
           Sign out
         </button>
       </nav>
 
-      <main style={w.hero}>
-        <div style={w.heroCopy}>
-          <div style={w.kicker}>PRIVATE WORKSPACE · {dateLabel}</div>
-          <h1 key={phrases[phraseIndex]} style={w.heroTitle}>{phrases[phraseIndex]}</h1>
-          <p style={w.heroText}>
+      <main style={{ ...w.hero, ...(isLaptop ? w.heroLaptop : {}), ...(compactViewport ? w.heroCompact : {}), ...(isMobile ? w.heroMobile : {}) }}>
+        <div style={{ ...w.heroCopy, ...(isLaptop ? w.heroCopyLaptop : {}), ...(compactViewport ? w.heroCopyCompact : {}) }}>
+          <div style={{ ...w.kicker, ...(isMobile ? w.kickerMobile : {}) }}>PRIVATE WORKSPACE · {dateLabel}</div>
+          <h1 key={phrases[phraseIndex]} style={{ ...w.heroTitle, ...(isLaptop ? w.heroTitleLaptop : {}), ...(isTablet ? w.heroTitleTablet : {}), ...(isMobile ? w.heroTitleMobile : {}) }}>{phrases[phraseIndex]}</h1>
+          <p style={{ ...w.heroText, ...(compactViewport ? w.heroTextCompact : {}) }}>
             WorkAxis has your briefing, tasks, finances, and network waiting in one clean command center.
           </p>
 
-          <div style={w.heroActions}>
-            <button type="button" onClick={() => openDashboard('dashboard')} style={w.primaryButton}>
+          <div style={{ ...w.heroActions, ...(isMobile ? w.heroActionsMobile : {}) }}>
+            <button type="button" onClick={() => openDashboard('dashboard')} style={{ ...w.primaryButton, ...(isMobile ? w.actionButtonMobile : {}) }}>
               Enter dashboard
               <ArrowRight size={17} strokeWidth={1.8} />
             </button>
-            <button type="button" onClick={() => setNeedsName(true)} style={w.secondaryButton}>
+            <button type="button" onClick={() => setNeedsName(true)} style={{ ...w.secondaryButton, ...(isMobile ? w.actionButtonMobile : {}) }}>
               Change name
             </button>
           </div>
         </div>
 
-        <aside style={w.briefPanel}>
-          <div style={w.briefHeader}>
+        <aside style={{ ...w.briefPanel, ...(isLaptop ? w.briefPanelLaptop : {}), ...(compactViewport ? w.briefPanelCompact : {}) }}>
+          <div style={{ ...w.briefHeader, ...(isMobile ? w.briefHeaderMobile : {}) }}>
             <BriefcaseBusiness size={16} strokeWidth={1.7} />
             WorkAxis Cockpit
           </div>
 
-          <div style={w.metricGrid}>
+          <div style={{ ...w.metricGrid, ...(compactViewport ? w.metricGridCompact : {}) }}>
             {commandMetrics.map((metric) => (
               <div key={metric.label} style={w.metricCell}>
-                <div style={w.metricValue}>{metric.value}</div>
+                <div style={{ ...w.metricValue, ...(isMobile ? w.metricValueMobile : {}) }}>{metric.value}</div>
                 <div style={w.metricLabel}>{metric.label}</div>
               </div>
             ))}
@@ -336,7 +359,7 @@ export default function WelcomeHero() {
           </div>
 
           {featureStack.map(({ Icon, label, value, tab }) => (
-            <button key={label} type="button" onClick={() => openDashboard(tab)} style={w.briefRow}>
+            <button key={label} type="button" onClick={() => openDashboard(tab)} style={{ ...w.briefRow, ...(isMobile ? w.briefRowMobile : {}) }}>
               <span style={w.rowIcon}>
                 <Icon size={15} strokeWidth={1.8} />
               </span>
@@ -349,7 +372,7 @@ export default function WelcomeHero() {
           ))}
 
           <a href={WELCOME_IMAGE_SOURCE} target="_blank" rel="noreferrer" style={w.photoCredit}>
-            Image: Chirayu Trivedi / Unsplash
+            Image: Brett Sayles / Pexels
           </a>
         </aside>
       </main>
@@ -388,6 +411,10 @@ const w = {
     color: '#f7f3eb',
     fontFamily: 'Inter, Space Grotesk, sans-serif',
   },
+  rootCompact: {
+    minHeight: '100svh',
+    overflow: 'auto',
+  },
   bgImage: {
     position: 'absolute',
     inset: '-7%',
@@ -398,15 +425,34 @@ const w = {
     filter: 'saturate(0.78) contrast(1.08)',
     opacity: 0.5,
   },
+  bgImageCompact: {
+    inset: 0,
+    width: '100%',
+    height: '100%',
+    position: 'fixed',
+    objectPosition: 'center top',
+    opacity: 0.42,
+  },
   overlay: {
     position: 'absolute',
     inset: 0,
     background: 'linear-gradient(135deg, rgba(8,8,8,0.94), rgba(8,8,8,0.76) 48%, rgba(8,8,8,0.94))',
   },
+  overlayCompact: {
+    position: 'fixed',
+    background: 'linear-gradient(180deg, rgba(8,8,8,0.94), rgba(8,8,8,0.84) 42%, rgba(8,8,8,0.97))',
+  },
   heroOverlay: {
     position: 'absolute',
     inset: 0,
     background: 'radial-gradient(circle at 80% 38%, rgba(247,243,235,0.13), transparent 29%), linear-gradient(90deg, rgba(8,8,8,0.97), rgba(8,8,8,0.76) 50%, rgba(8,8,8,0.66) 100%)',
+  },
+  heroOverlayLaptop: {
+    background: 'radial-gradient(circle at 74% 35%, rgba(247,243,235,0.1), transparent 24%), linear-gradient(90deg, rgba(8,8,8,0.97), rgba(8,8,8,0.82) 54%, rgba(8,8,8,0.72) 100%)',
+  },
+  heroOverlayCompact: {
+    position: 'fixed',
+    background: 'linear-gradient(180deg, rgba(8,8,8,0.92), rgba(8,8,8,0.83) 40%, rgba(8,8,8,0.98) 100%)',
   },
   noise: {
     position: 'absolute',
@@ -423,12 +469,25 @@ const w = {
     alignItems: 'center',
     padding: '26px 56px',
   },
+  navLaptop: {
+    padding: '22px 36px',
+  },
+  navCompact: {
+    padding: '18px 20px 8px',
+    gap: 14,
+    alignItems: 'center',
+  },
   brand: {
     display: 'flex',
     alignItems: 'center',
     gap: 10,
     letterSpacing: 4,
     fontFamily: 'Newsreader, Cormorant Garamond, serif',
+  },
+  brandMobile: {
+    gap: 8,
+    letterSpacing: 3,
+    minWidth: 0,
   },
   brandDot: {
     width: 7,
@@ -458,6 +517,12 @@ const w = {
     fontWeight: 600,
     fontFamily: 'Inter, sans-serif',
   },
+  quietButtonMobile: {
+    padding: '9px 10px',
+    fontSize: 11,
+    gap: 6,
+    flexShrink: 0,
+  },
   nameStage: {
     minHeight: 'calc(100vh - 90px)',
     position: 'relative',
@@ -466,6 +531,11 @@ const w = {
     alignItems: 'center',
     justifyContent: 'center',
     padding: '40px 24px 80px',
+  },
+  nameStageCompact: {
+    minHeight: 'auto',
+    alignItems: 'flex-start',
+    padding: '42px 18px 60px',
   },
   namePanel: {
     width: 'min(560px, 100%)',
@@ -476,6 +546,13 @@ const w = {
     padding: '44px',
     boxShadow: '0 28px 80px rgba(0,0,0,0.35)',
     animation: 'heroIn 700ms ease both',
+  },
+  namePanelTablet: {
+    padding: '38px',
+  },
+  namePanelMobile: {
+    padding: '26px 22px',
+    borderRadius: 6,
   },
   kicker: {
     fontSize: 10,
@@ -492,6 +569,13 @@ const w = {
     fontWeight: 600,
     margin: '0 0 28px',
     fontFamily: 'Newsreader, Cormorant Garamond, serif',
+  },
+  nameTitleTablet: {
+    fontSize: 38,
+  },
+  nameTitleMobile: {
+    fontSize: 31,
+    lineHeight: 1.08,
   },
   nameInput: {
     width: '100%',
@@ -542,9 +626,32 @@ const w = {
     gap: 72,
     padding: '40px 72px 96px',
   },
+  heroLaptop: {
+    gap: 42,
+    padding: '32px 44px 80px',
+    gridTemplateColumns: 'minmax(0, 1fr) minmax(300px, 0.7fr)',
+  },
+  heroCompact: {
+    minHeight: 'auto',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: 32,
+    padding: '48px 22px 64px',
+  },
+  heroMobile: {
+    padding: '54px 20px 58px',
+    gap: 30,
+  },
   heroCopy: {
     maxWidth: 820,
     animation: 'heroIn 800ms ease both',
+  },
+  heroCopyLaptop: {
+    maxWidth: 650,
+  },
+  heroCopyCompact: {
+    maxWidth: '100%',
   },
   heroTitle: {
     fontSize: 'clamp(58px, 9vw, 126px)',
@@ -555,6 +662,22 @@ const w = {
     fontFamily: 'Newsreader, Cormorant Garamond, serif',
     animation: 'phraseIn 520ms ease both',
   },
+  heroTitleLaptop: {
+    fontSize: 'clamp(54px, 7.4vw, 96px)',
+    lineHeight: 0.96,
+  },
+  heroTitleTablet: {
+    fontSize: 'clamp(48px, 9vw, 76px)',
+    lineHeight: 0.98,
+    maxWidth: 720,
+  },
+  heroTitleMobile: {
+    fontSize: 'clamp(42px, 14vw, 58px)',
+    lineHeight: 1.02,
+    marginBottom: 20,
+    maxWidth: '100%',
+    overflowWrap: 'break-word',
+  },
   heroText: {
     maxWidth: 540,
     fontSize: 17,
@@ -562,11 +685,24 @@ const w = {
     color: 'rgba(247,243,235,0.58)',
     margin: '0 0 34px',
   },
+  heroTextCompact: {
+    fontSize: 15,
+    lineHeight: 1.68,
+    maxWidth: 520,
+    marginBottom: 26,
+  },
   heroActions: {
     display: 'flex',
     alignItems: 'center',
     gap: 14,
     flexWrap: 'wrap',
+  },
+  heroActionsMobile: {
+    alignItems: 'stretch',
+    flexDirection: 'column',
+  },
+  actionButtonMobile: {
+    width: '100%',
   },
   secondaryButton: {
     background: 'transparent',
@@ -588,6 +724,17 @@ const w = {
     animation: 'heroIn 900ms 120ms ease both',
     minWidth: 0,
   },
+  briefPanelLaptop: {
+    padding: '24px 0',
+  },
+  briefPanelCompact: {
+    width: '100%',
+    border: '1px solid rgba(247,243,235,0.12)',
+    background: 'rgba(8,8,8,0.48)',
+    backdropFilter: 'blur(12px)',
+    borderRadius: 8,
+    padding: '20px',
+  },
   briefHeader: {
     display: 'flex',
     alignItems: 'center',
@@ -599,11 +746,19 @@ const w = {
     textTransform: 'uppercase',
     marginBottom: 22,
   },
+  briefHeaderMobile: {
+    fontSize: 12,
+    marginBottom: 18,
+  },
   metricGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
     gap: 10,
     marginBottom: 26,
+  },
+  metricGridCompact: {
+    gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+    gap: 12,
   },
   metricCell: {
     borderTop: '1px solid rgba(247,243,235,0.1)',
@@ -616,6 +771,9 @@ const w = {
     fontFamily: 'Newsreader, Cormorant Garamond, serif',
     lineHeight: 1,
     overflowWrap: 'anywhere',
+  },
+  metricValueMobile: {
+    fontSize: 23,
   },
   metricLabel: {
     color: 'rgba(247,243,235,0.32)',
@@ -650,6 +808,11 @@ const w = {
     padding: '15px 0',
     textAlign: 'left',
     fontFamily: 'Inter, sans-serif',
+  },
+  briefRowMobile: {
+    gridTemplateColumns: '32px minmax(0, 1fr) 16px',
+    gap: 12,
+    padding: '14px 0',
   },
   rowIcon: {
     width: 30,

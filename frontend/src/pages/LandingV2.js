@@ -162,6 +162,7 @@ export default function LandingV2() {
   useEffect(() => {
     if (!introDone) return;
     const ctx = gsap.context(() => {
+      const isSmallScreen = window.matchMedia('(max-width: 760px)').matches;
 
       // HERO ENTRANCE
       const tl = gsap.timeline({ delay: 0.1 });
@@ -218,7 +219,7 @@ export default function LandingV2() {
 
       // SCENE 3 SLIDE FROM RIGHT
       gsap.fromTo(s3Ref.current,
-        { x: '100%', opacity: 0 },
+        { x: isSmallScreen ? '0%' : '100%', opacity: isSmallScreen ? 1 : 0 },
         { x: '0%', opacity: 1, ease: 'expo.inOut', scrollTrigger: { trigger: s3Ref.current, start: 'top 95%', end: 'top 5%', scrub: 1.5 } }
       );
       const t3 = gsap.timeline({ scrollTrigger: { trigger: s3Ref.current, start: 'top 45%', toggleActions: 'play none none reverse' } });
@@ -273,12 +274,12 @@ export default function LandingV2() {
   ];
 
   return (
-    <div ref={wrapRef} style={{ background: '#0e0e0e', fontFamily: 'Inter, Space Grotesk, sans-serif', overflowX: 'hidden', color: '#f5f5f5' }}>
+    <div ref={wrapRef} className="landing-shell" style={{ background: '#0e0e0e', fontFamily: 'Inter, Space Grotesk, sans-serif', overflowX: 'hidden', color: '#f5f5f5' }}>
 
       {!introDone && <Intro onDone={handleIntroDone} />}
 
       {/* NAV */}
-      <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9000, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 24, padding: '18px 64px', background: 'rgba(8,8,8,0.94)', borderBottom: '1px solid rgba(245,245,245,0.04)', backdropFilter: 'blur(14px)' }}>
+      <nav className="landing-nav" style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9000, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 24, padding: '18px 64px', background: 'rgba(8,8,8,0.94)', borderBottom: '1px solid rgba(245,245,245,0.04)', backdropFilter: 'blur(14px)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#f5f5f5' }} />
           <span style={{ fontSize: 16, fontWeight: 800, color: '#f5f5f5', letterSpacing: '4px', fontFamily: 'Bodoni Moda, Playfair Display, serif' }}>WORK</span>
@@ -304,13 +305,13 @@ export default function LandingV2() {
       </nav>
 
       {/* SCENE 1 — HERO */}
-      <section ref={heroRef} style={{ height: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <section ref={heroRef} className="hero-scene" style={{ height: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <img ref={imgRef} src={heroCity} alt=""
           style={{ position: 'absolute', inset: '-10%', width: '120%', height: '120%', objectFit: 'cover', objectPosition: 'center', opacity: 0, willChange: 'transform' }} />
         <div id="hov" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(14,14,14,0.55) 0%, rgba(14,14,14,0.2) 45%, rgba(14,14,14,0.92) 100%)', opacity: 0.55, zIndex: 1 }} />
         <div style={{ position: 'absolute', inset: 0, opacity: 0.04, backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")", zIndex: 2, pointerEvents: 'none' }} />
 
-        <div ref={textRef} style={{ position: 'relative', zIndex: 3, textAlign: 'center', padding: '180px 40px 0', maxWidth: 1060, willChange: 'transform' }}>
+        <div ref={textRef} className="hero-copy" style={{ position: 'relative', zIndex: 3, textAlign: 'center', padding: '180px 40px 0', maxWidth: 1060, willChange: 'transform' }}>
           <div id="hl" style={{ fontSize: 10, color: 'rgba(245,245,245,0.42)', letterSpacing: '4px', marginBottom: 42, fontFamily: 'Space Mono, monospace', opacity: 0 }}>
             PROFESSIONAL INTELLIGENCE SYSTEM
           </div>
@@ -365,12 +366,12 @@ export default function LandingV2() {
       </section>
 
       {/* SCENE 2 — AWAKENING */}
-      <section ref={s2Ref} style={{ minHeight: '100vh', background: '#0e0e0e', display: 'flex', alignItems: 'center', justifyContent: 'center', clipPath: 'inset(100% 0% 0% 0%)', position: 'relative', zIndex: 2, overflow: 'hidden', transformOrigin: 'center bottom' }}>
+      <section ref={s2Ref} className="scene-2" style={{ minHeight: '100vh', background: '#0e0e0e', display: 'flex', alignItems: 'center', justifyContent: 'center', clipPath: 'inset(100% 0% 0% 0%)', position: 'relative', zIndex: 2, overflow: 'hidden', transformOrigin: 'center bottom' }}>
         <div id="s2grid" style={{ position: 'absolute', inset: '8% 7%', border: '1px solid rgba(247,243,235,0.045)', backgroundImage: 'linear-gradient(rgba(247,243,235,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(247,243,235,0.035) 1px, transparent 1px)', backgroundSize: '72px 72px', opacity: 0, transformOrigin: 'center', pointerEvents: 'none' }} />
         <div id="s2scan" style={{ position: 'absolute', left: 0, right: 0, top: '42%', height: 120, background: 'linear-gradient(180deg, transparent, rgba(247,243,235,0.055), transparent)', opacity: 0, pointerEvents: 'none' }} />
         <div id="s2shutterA" style={{ position: 'absolute', top: '19%', left: '8%', right: '8%', height: 1, background: 'linear-gradient(90deg, transparent, rgba(247,243,235,0.18), transparent)', transformOrigin: 'left', transform: 'scaleX(0)' }} />
         <div id="s2shutterB" style={{ position: 'absolute', bottom: '19%', left: '8%', right: '8%', height: 1, background: 'linear-gradient(90deg, transparent, rgba(247,243,235,0.12), transparent)', transformOrigin: 'right', transform: 'scaleX(0)' }} />
-        <div style={{ textAlign: 'center', maxWidth: 880, padding: '0 40px', position: 'relative', zIndex: 2, perspective: 900 }}>
+        <div className="scene-2-copy" style={{ textAlign: 'center', maxWidth: 880, padding: '0 40px', position: 'relative', zIndex: 2, perspective: 900 }}>
           <div id="s2e" style={{ fontSize: 10, color: 'rgba(245,245,245,0.16)', letterSpacing: '5px', marginBottom: 56, fontFamily: 'Space Mono, monospace', opacity: 0 }}>{'// INTRODUCING'}</div>
           <div id="s2lg" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 18, marginBottom: 60, opacity: 0 }}>
             <div style={{ width: 13, height: 13, borderRadius: '50%', border: '1.5px solid rgba(245,245,245,0.6)' }} />
@@ -378,7 +379,7 @@ export default function LandingV2() {
             <span style={{ fontSize: 52, fontWeight: 500, color: 'rgba(245,245,245,0.2)', letterSpacing: '8px', fontFamily: 'Bodoni Moda, Playfair Display, serif' }}>AXIS</span>
           </div>
           <div id="s2dv" style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(245,245,245,0.08), transparent)', marginBottom: 60, transformOrigin: 'left', transform: 'scaleX(0)' }} />
-          <h2 style={{ fontSize: 52, fontWeight: 700, color: '#f7f3eb', lineHeight: 1.28, letterSpacing: 0, marginBottom: 40, fontFamily: 'Bodoni Moda, Playfair Display, serif' }}>
+          <h2 className="scene-2-title" style={{ fontSize: 52, fontWeight: 700, color: '#f7f3eb', lineHeight: 1.28, letterSpacing: 0, marginBottom: 40, fontFamily: 'Bodoni Moda, Playfair Display, serif' }}>
             {'What if one system'.split(' ').map((w, i) => (
               <span key={i} className="s2w" style={{ display: 'inline-block', marginRight: '0.28em', opacity: 0 }}>{w}</span>
             ))}
@@ -398,9 +399,9 @@ export default function LandingV2() {
       </section>
 
       {/* SCENE 3 — THE BRIEFING */}
-      <section ref={s3Ref} style={{ minHeight: '100vh', background: '#161616', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 64px', borderTop: '1px solid rgba(245,245,245,0.04)', position: 'relative', zIndex: 3 }}>
-        <div style={{ display: 'flex', gap: 110, alignItems: 'center', maxWidth: 1140, width: '100%' }}>
-          <div style={{ flex: 1 }}>
+      <section ref={s3Ref} className="scene-3" style={{ minHeight: '100vh', background: '#161616', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 64px', borderTop: '1px solid rgba(245,245,245,0.04)', position: 'relative', zIndex: 3 }}>
+        <div className="scene-3-inner" style={{ display: 'flex', gap: 110, alignItems: 'center', maxWidth: 1140, width: '100%' }}>
+          <div className="scene-3-copy" style={{ flex: 1 }}>
             <div id="s3t" style={{ fontSize: 10, color: 'rgba(245,245,245,0.18)', letterSpacing: '5px', marginBottom: 36, fontFamily: 'Space Mono, monospace', opacity: 0 }}>{'// GOOD MORNING'}</div>
             <h2 id="s3h" style={{ fontSize: 54, fontWeight: 700, color: '#f7f3eb', lineHeight: 1.22, letterSpacing: 0, marginBottom: 32, opacity: 0, fontFamily: 'Bodoni Moda, Playfair Display, serif' }}>
               Your entire<br />professional life,<br />
@@ -410,7 +411,7 @@ export default function LandingV2() {
               Every morning, WorkAxis AI synthesizes everything that matters — tasks, follow-ups, money, and your next career move.
             </p>
           </div>
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div className="scene-3-cards" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 14 }}>
             {cards.map((c, i) => (
               <div key={i} className="bc" style={{ background: 'rgba(245,245,245,0.02)', border: '1px solid rgba(245,245,245,0.05)', borderLeft: `2px solid ${c.c}`, padding: '22px 28px', opacity: 0 }}>
                 <div style={{ fontSize: 10, fontWeight: 600, color: c.c, letterSpacing: '3px', marginBottom: 10, fontFamily: 'Space Mono, monospace' }}>{c.l}</div>
@@ -422,8 +423,8 @@ export default function LandingV2() {
       </section>
 
       {/* SCENE 4 — MODULES */}
-      <section ref={s4Ref} style={{ background: '#0e0e0e', padding: '130px 64px', borderTop: '1px solid rgba(245,245,245,0.04)', position: 'relative', zIndex: 4 }}>
-        <div style={{ maxWidth: 660, marginBottom: 100 }}>
+      <section ref={s4Ref} className="scene-4" style={{ background: '#0e0e0e', padding: '130px 64px', borderTop: '1px solid rgba(245,245,245,0.04)', position: 'relative', zIndex: 4 }}>
+        <div className="scene-4-head" style={{ maxWidth: 660, marginBottom: 100 }}>
           <p style={{ fontSize: 10, color: 'rgba(245,245,245,0.16)', letterSpacing: '4px', marginBottom: 28, fontFamily: 'Space Mono, monospace' }}>{'// SIX MODULES · ONE SYSTEM'}</p>
           <h2 style={{ fontSize: 64, fontWeight: 700, color: '#f7f3eb', letterSpacing: 0, lineHeight: 1.16, fontFamily: 'Bodoni Moda, Playfair Display, serif' }}>
             Everything a serious<br />
@@ -447,10 +448,10 @@ export default function LandingV2() {
       </section>
 
       {/* SCENE 5 — THE COMMAND */}
-      <section ref={s5Ref} style={{ minHeight: '100vh', background: '#080808', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', borderTop: '1px solid rgba(245,245,245,0.03)', opacity: 0, zIndex: 5, padding: '120px 0 100px' }}>
+      <section ref={s5Ref} className="scene-5" style={{ minHeight: '100vh', background: '#080808', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', borderTop: '1px solid rgba(245,245,245,0.03)', opacity: 0, zIndex: 5, padding: '120px 0 100px' }}>
         <div id="s5l1" style={{ position: 'absolute', top: '25%', left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent, rgba(245,245,245,0.04), transparent)', transformOrigin: 'left', transform: 'scaleX(0)' }} />
         <div id="s5l2" style={{ position: 'absolute', top: '75%', left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent, rgba(245,245,245,0.03), transparent)', transformOrigin: 'left', transform: 'scaleX(0)' }} />
-        <div style={{ position: 'relative', zIndex: 2, textAlign: 'left', width: 'min(960px, calc(100% - 96px))', marginTop: 72 }}>
+        <div className="command-wrap" style={{ position: 'relative', zIndex: 2, textAlign: 'left', width: 'min(960px, calc(100% - 96px))', marginTop: 72 }}>
           <CommandFinal onClick={login} />
         </div>
         <footer style={{ position: 'absolute', bottom: 36, left: 0, right: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 64px' }}>
@@ -464,7 +465,12 @@ export default function LandingV2() {
         @import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;0,6..96,600;0,6..96,700;0,6..96,800;1,6..96,400;1,6..96,500;1,6..96,600;1,6..96,700&family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: auto; }
-        body { background: #0e0e0e; font-family: Inter, sans-serif; }
+        body { background: #0e0e0e; font-family: Inter, sans-serif; overflow-x: hidden; }
+        .landing-shell {
+          width: 100%;
+          max-width: 100vw;
+          overflow-x: hidden;
+        }
         ::-webkit-scrollbar { width: 2px; }
         ::-webkit-scrollbar-track { background: #0e0e0e; }
         ::-webkit-scrollbar-thumb { background: rgba(245,245,245,0.12); }
@@ -472,6 +478,120 @@ export default function LandingV2() {
         @keyframes sp {
           0%, 100% { opacity: 0.15; transform: scaleY(1); }
           50% { opacity: 0.6; transform: scaleY(1.6); }
+        }
+
+        @media (max-width: 1366px) {
+          nav { padding: 16px 36px !important; }
+          #h1a { font-size: 78px !important; }
+          #h1b { font-size: 82px !important; }
+          #h1c { font-size: 92px !important; }
+          .mw { font-size: 56px !important; }
+          .scene-3 { padding: 72px 44px !important; }
+          .scene-3-inner { gap: 64px !important; }
+          .scene-4 { padding: 110px 44px !important; }
+        }
+
+        @media (max-width: 1024px) {
+          nav { grid-template-columns: 1fr !important; justify-items: center !important; gap: 12px !important; padding: 14px 22px !important; }
+          nav > div:first-child { justify-content: center !important; }
+          nav > div:nth-child(2) { max-width: 100% !important; overflow-x: auto !important; gap: 20px !important; }
+          nav button { display: none !important; }
+          .hero-scene { min-height: 760px !important; height: auto !important; }
+          .hero-copy { padding: 170px 26px 88px !important; width: min(760px, 100%) !important; }
+          #h1a { font-size: 64px !important; }
+          #h1b { font-size: 68px !important; }
+          #h1c { font-size: 78px !important; }
+          #hcta { flex-direction: column !important; align-items: stretch !important; max-width: 420px !important; margin-left: auto !important; margin-right: auto !important; }
+          #hcta button { width: 100% !important; }
+          .scene-2 { min-height: auto !important; padding: 130px 0 120px !important; }
+          .scene-2-copy { padding: 0 30px !important; width: 100% !important; }
+          .scene-2-title { font-size: clamp(38px, 7vw, 56px) !important; line-height: 1.18 !important; }
+          .scene-3 { min-height: auto !important; padding: 110px 32px !important; transform: none !important; }
+          .scene-3-inner { flex-direction: column !important; align-items: stretch !important; gap: 46px !important; }
+          .scene-3-copy,
+          .scene-3-cards { width: 100% !important; }
+          #s3h { font-size: clamp(42px, 7vw, 60px) !important; }
+          #s3p { max-width: 620px !important; }
+          .bc { width: 100% !important; }
+          .scene-4 { padding: 110px 32px !important; }
+          .scene-4-head { margin-bottom: 70px !important; }
+          .scene-4-head h2 { font-size: clamp(42px, 7vw, 62px) !important; }
+          .mr { gap: 28px !important; padding: 42px 0 !important; }
+          .mr > div:nth-child(2) { width: 330px !important; }
+          .mw { font-size: 46px !important; }
+          .scene-5 { min-height: auto !important; padding: 110px 0 32px !important; opacity: 1 !important; }
+          .command-wrap { width: calc(100% - 56px) !important; margin-top: 34px !important; }
+        }
+
+        @media (max-width: 760px) {
+          nav { position: absolute !important; grid-template-columns: 1fr !important; padding: 18px 18px !important; background: rgba(8,8,8,0.86) !important; }
+          nav > div:first-child span { font-size: 15px !important; letter-spacing: 3px !important; }
+          nav > div:nth-child(2) { display: none !important; }
+          .hero-scene { min-height: 100svh !important; height: auto !important; align-items: center !important; }
+          .hero-scene img { inset: 0 !important; width: 100% !important; height: 100% !important; transform: none !important; }
+          .hero-copy { padding: 132px 18px 76px !important; max-width: 100% !important; }
+          #hl { font-size: 9px !important; letter-spacing: 2.8px !important; margin-bottom: 28px !important; }
+          #h1a { font-size: clamp(38px, 14vw, 54px) !important; line-height: 1.04 !important; }
+          #h1b { font-size: clamp(38px, 14vw, 54px) !important; line-height: 1.04 !important; }
+          #h1c { font-size: clamp(46px, 16vw, 62px) !important; line-height: 1.08 !important; }
+          #hsub { font-size: 14px !important; max-width: 320px !important; }
+          #hcta { gap: 12px !important; max-width: 100% !important; }
+          #hcta button { padding: 15px 18px !important; font-size: 10px !important; letter-spacing: 2px !important; }
+          #hmeta { gap: 14px !important; }
+          #hmeta span { font-size: 8px !important; letter-spacing: 1.4px !important; }
+          .hero-scene > div[style*="bottom: 34px"],
+          .hero-scene > div[style*="bottom: 44px"] { display: none !important; }
+          section { overflow-x: hidden !important; }
+          section[style*="min-height: 100vh"] { min-height: auto !important; }
+          .scene-2 { min-height: auto !important; padding: 112px 0 96px !important; clip-path: none !important; transform: none !important; }
+          #s2grid { inset: 0 !important; background-size: 44px 44px !important; }
+          .scene-2-copy { padding: 0 20px !important; perspective: none !important; }
+          #s2e { margin-bottom: 34px !important; }
+          #s2lg { gap: 10px !important; margin-bottom: 38px !important; }
+          #s2lg span { font-size: 27px !important; letter-spacing: 4px !important; }
+          #s2lg > div { width: 10px !important; height: 10px !important; }
+          #s2dv { margin-bottom: 38px !important; }
+          .scene-2-title { font-size: clamp(31px, 10vw, 44px) !important; line-height: 1.18 !important; text-wrap: balance !important; margin-bottom: 28px !important; }
+          .s2w { display: inline !important; white-space: normal !important; margin-right: 0.18em !important; }
+          #s2sb { font-size: 9px !important; letter-spacing: 2.4px !important; line-height: 1.8 !important; }
+          .scene-3 { padding: 92px 20px !important; background: #141414 !important; transform: none !important; opacity: 1 !important; }
+          .scene-3-inner { gap: 34px !important; }
+          #s3t { font-size: 9px !important; letter-spacing: 3px !important; margin-bottom: 24px !important; }
+          #s3h { font-size: clamp(34px, 11vw, 46px) !important; line-height: 1.18 !important; margin-bottom: 22px !important; }
+          #s3p { font-size: 14px !important; line-height: 1.72 !important; max-width: 100% !important; }
+          .bc { padding: 18px !important; }
+          .bc div:last-child { font-size: 14px !important; }
+          .scene-4 { padding: 92px 20px !important; transform: none !important; }
+          .scene-4-head { max-width: 100% !important; margin-bottom: 52px !important; }
+          .scene-4-head h2 { font-size: clamp(34px, 11vw, 48px) !important; line-height: 1.16 !important; }
+          .mr { flex-direction: column !important; align-items: flex-start !important; gap: 14px !important; padding: 32px 0 !important; }
+          .mn { width: auto !important; }
+          .mr > div:nth-child(2) { width: 100% !important; }
+          .mw { font-size: clamp(36px, 13vw, 50px) !important; line-height: 1.08 !important; max-width: 100% !important; overflow-wrap: anywhere !important; }
+          .mi h3 { font-size: 20px !important; }
+          .mi p { font-size: 14px !important; line-height: 1.7 !important; }
+          .scene-5 { min-height: auto !important; padding: 92px 0 0 !important; }
+          .command-wrap { width: calc(100% - 36px) !important; margin-top: 0 !important; }
+          .command-wrap > div { gap: 28px !important; }
+          .command-wrap h2 { font-size: clamp(34px, 11vw, 46px) !important; }
+          .command-wrap button { width: 100% !important; padding: 15px 18px !important; }
+          footer { position: relative !important; bottom: auto !important; flex-direction: column !important; gap: 12px !important; padding: 36px 20px 0 !important; text-align: center !important; }
+        }
+
+        @media (max-width: 420px) {
+          nav > div:first-child span { font-size: 14px !important; letter-spacing: 2.4px !important; }
+          .hero-copy { padding-left: 16px !important; padding-right: 16px !important; }
+          #h1a { font-size: clamp(36px, 13vw, 49px) !important; }
+          #h1b { font-size: clamp(36px, 13vw, 49px) !important; }
+          #h1c { font-size: clamp(44px, 15vw, 58px) !important; }
+          #hsub { font-size: 13px !important; }
+          .scene-2-title,
+          #s3h,
+          .scene-4-head h2 { text-align: left !important; }
+          .scene-2-copy { text-align: left !important; }
+          #s2lg { justify-content: flex-start !important; }
+          #s2dv { margin-left: 0 !important; margin-right: 0 !important; }
+          .mw { font-size: clamp(34px, 12vw, 46px) !important; }
         }
       `}</style>
     </div>

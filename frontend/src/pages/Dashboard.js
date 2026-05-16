@@ -84,6 +84,15 @@ const formatDateOnly = (value) => {
   return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 };
 
+const getDashboardViewport = () => {
+  if (typeof window === 'undefined') return 'desktop';
+  const width = window.innerWidth;
+  if (width <= 720) return 'mobile';
+  if (width <= 1024) return 'tablet';
+  if (width <= 1366) return 'laptop';
+  return 'desktop';
+};
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -108,6 +117,7 @@ export default function Dashboard() {
   const [careerGoals, setCareerGoals] = useState([]);
   const [newCareerGoal, setNewCareerGoal] = useState({ title: '', target: '' });
   const [reminderNotice, setReminderNotice] = useState(null);
+  const [viewportMode, setViewportMode] = useState(() => getDashboardViewport());
 
   // Ref to track if data is loaded before generating briefing
   const dataLoadedRef = useRef(false);
@@ -226,6 +236,13 @@ export default function Dashboard() {
       console.error(e);
     }
   }, [user, generateBriefing]);
+
+  useEffect(() => {
+    const handleResize = () => setViewportMode(getDashboardViewport());
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (!user) { navigate('/'); return; }
@@ -378,36 +395,46 @@ export default function Dashboard() {
     { id: 'settings', label: 'Settings', Icon: Settings },
   ];
   const theme = WORKSPACE_THEMES[settingsDraft.workspaceTheme] || WORKSPACE_THEMES.obsidian;
-  const contentStyle = { ...d.tabContent, ...(settingsDraft.compactMode ? d.tabContentCompact : {}) };
+  const isMobile = viewportMode === 'mobile';
+  const isTablet = viewportMode === 'tablet';
+  const isLaptop = viewportMode === 'laptop';
+  const compactViewport = isMobile || isTablet;
+  const contentStyle = {
+    ...d.tabContent,
+    ...(settingsDraft.compactMode ? d.tabContentCompact : {}),
+    ...(isLaptop ? d.tabContentLaptop : {}),
+    ...(isTablet ? d.tabContentTablet : {}),
+    ...(isMobile ? d.tabContentMobile : {}),
+  };
 
   return (
-    <div style={{ ...d.root, background: theme.root }}>
+    <div style={{ ...d.root, ...(compactViewport ? d.rootCompact : {}), background: theme.root }}>
       {/* SIDEBAR */}
-      <div style={{ ...d.sidebar, background: theme.sidebar }}>
-        <div style={d.sidebarLogo}>
+      <div style={{ ...d.sidebar, ...(compactViewport ? d.sidebarCompact : {}), ...(isMobile ? d.sidebarMobile : {}), background: theme.sidebar }}>
+        <div style={{ ...d.sidebarLogo, ...(compactViewport ? d.sidebarLogoCompact : {}) }}>
           <div style={d.logoDot} />
           <span style={d.logoWork}>WORK</span>
           <span style={d.logoAxis}>AXIS</span>
         </div>
-        <div style={d.sidebarDivider} />
+        {!compactViewport && <div style={d.sidebarDivider} />}
         {tabs.map(tab => {
           const Icon = tab.Icon;
           return (
-          <div key={tab.id} style={{ ...d.sidebarItem, ...(activeTab === tab.id ? d.sidebarActive : {}) }}
+          <div key={tab.id} style={{ ...d.sidebarItem, ...(compactViewport ? d.sidebarItemCompact : {}), ...(isMobile ? d.sidebarItemMobile : {}), ...(activeTab === tab.id ? d.sidebarActive : {}) }}
             onClick={() => setActiveTab(tab.id)}>
             <Icon size={15} strokeWidth={1.8} />
             <span>{tab.label}</span>
           </div>
         )})}
-        <div style={d.sidebarBottom}>
+        <div style={{ ...d.sidebarBottom, ...(compactViewport ? d.sidebarBottomCompact : {}) }}>
           <div style={d.userInfo}>
             {user?.photoURL && <img src={user.photoURL} alt="" style={d.avatar} />}
-            <div>
+            <div style={{ minWidth: 0 }}>
               <div style={d.userName}>{displayName}</div>
               <div style={d.userEmail}>{user?.email}</div>
             </div>
           </div>
-          <button onClick={logout} style={d.logoutBtn}>
+          <button onClick={logout} style={{ ...d.logoutBtn, ...(compactViewport ? d.logoutBtnCompact : {}) }}>
             <LogOut size={14} strokeWidth={1.8} />
             SIGN OUT
           </button>
@@ -415,9 +442,9 @@ export default function Dashboard() {
       </div>
 
       {/* MAIN */}
-      <div style={{ ...d.main, background: theme.root }}>
+      <div style={{ ...d.main, ...(compactViewport ? d.mainCompact : {}), background: theme.root }}>
         {reminderNotice && (
-          <div style={d.reminderToast}>
+          <div style={{ ...d.reminderToast, ...(isMobile ? d.reminderToastMobile : {}) }}>
             <div style={d.reminderToastIcon}>
               <BellRing size={18} strokeWidth={1.8} />
             </div>
@@ -444,10 +471,10 @@ export default function Dashboard() {
         {/* DASHBOARD TAB */}
         {activeTab === 'dashboard' && (
           <div style={contentStyle}>
-            <div style={d.pageHeader}>
+            <div style={{ ...d.pageHeader, ...(compactViewport ? d.pageHeaderCompact : {}) }}>
               <div>
-                <div key={`label-${headlineIndex}`} style={d.greetingLabel}>{headlineFrames[headlineIndex].label}</div>
-                <div key={`name-${headlineIndex}`} style={d.greetingName}>{headlineFrames[headlineIndex].name}</div>
+                <div key={`label-${headlineIndex}`} style={{ ...d.greetingLabel, ...(isLaptop ? d.greetingLabelLaptop : {}), ...(compactViewport ? d.greetingLabelCompact : {}) }}>{headlineFrames[headlineIndex].label}</div>
+                <div key={`name-${headlineIndex}`} style={{ ...d.greetingName, ...(isLaptop ? d.greetingNameLaptop : {}), ...(compactViewport ? d.greetingNameCompact : {}) }}>{headlineFrames[headlineIndex].name}</div>
               </div>
               <button onClick={() => generateBriefing(tasks, expenses, contacts, displayName)} style={d.refreshBtn}>
                 <RefreshCcw size={14} strokeWidth={1.8} />
@@ -473,7 +500,7 @@ export default function Dashboard() {
             </div>
 
             {/* STATS */}
-            <div style={d.statsRow}>
+            <div style={{ ...d.statsRow, ...(isMobile ? d.statsRowMobile : {}) }}>
               {[
                 { val: pendingTasks, label: 'Pending Tasks' },
                 { val: completedTasks, label: 'Completed' },
@@ -528,8 +555,8 @@ export default function Dashboard() {
         {/* TASKS TAB */}
         {activeTab === 'tasks' && (
           <div style={contentStyle}>
-            <div style={d.pageHeader}>
-              <div style={d.greetingLabel}>Tasks</div>
+            <div style={{ ...d.pageHeader, ...(compactViewport ? d.pageHeaderCompact : {}) }}>
+              <div style={{ ...d.greetingLabel, ...(compactViewport ? d.greetingLabelCompact : {}) }}>Tasks</div>
             </div>
             <div style={d.inputRow}>
               <input
@@ -563,12 +590,12 @@ export default function Dashboard() {
                   <option key={id} value={id}>{priority.label}</option>
                 ))}
               </select>
-              <button onClick={addTask} style={d.addBtn}>
+              <button onClick={addTask} style={{ ...d.addBtn, ...(isMobile ? d.fullWidthButton : {}) }}>
                 <Plus size={15} strokeWidth={2} />
                 ADD
               </button>
               {typeof window !== 'undefined' && 'Notification' in window && window.Notification.permission !== 'granted' && (
-                <button onClick={enableBrowserReminders} style={d.secondaryBtn}>
+                <button onClick={enableBrowserReminders} style={{ ...d.secondaryBtn, ...(isMobile ? d.fullWidthButton : {}) }}>
                   <BellRing size={14} strokeWidth={1.8} />
                   ENABLE ALERTS
                 </button>
@@ -618,9 +645,9 @@ export default function Dashboard() {
         {/* EXPENSES TAB */}
         {activeTab === 'expenses' && (
           <div style={contentStyle}>
-            <div style={d.pageHeader}>
-              <div style={d.greetingLabel}>Finances</div>
-              <div style={{ fontSize: 28, fontWeight: 700, color: '#f5f5f5', fontFamily: 'Newsreader, Cormorant Garamond, serif' }}>
+            <div style={{ ...d.pageHeader, ...(compactViewport ? d.pageHeaderCompact : {}) }}>
+              <div style={{ ...d.greetingLabel, ...(compactViewport ? d.greetingLabelCompact : {}) }}>Finances</div>
+              <div style={{ fontSize: isMobile ? 24 : 28, fontWeight: 700, color: '#f5f5f5', fontFamily: 'Newsreader, Cormorant Garamond, serif' }}>
                 ₹{totalExpenses.toLocaleString('en-IN')} total
               </div>
             </div>
@@ -647,8 +674,8 @@ export default function Dashboard() {
         {/* NETWORK TAB */}
         {activeTab === 'network' && (
           <div style={contentStyle}>
-            <div style={d.pageHeader}>
-              <div style={d.greetingLabel}>Network</div>
+            <div style={{ ...d.pageHeader, ...(compactViewport ? d.pageHeaderCompact : {}) }}>
+              <div style={{ ...d.greetingLabel, ...(compactViewport ? d.greetingLabelCompact : {}) }}>Network</div>
             </div>
             <div style={d.inputRow}>
               <input value={newContact.name} onChange={e => setNewContact(p => ({ ...p, name: e.target.value }))} placeholder="Name..." style={d.input} />
@@ -676,12 +703,12 @@ export default function Dashboard() {
         {/* CAREER TAB */}
         {activeTab === 'career' && (
           <div style={contentStyle}>
-            <div style={d.pageHeader}>
+            <div style={{ ...d.pageHeader, ...(compactViewport ? d.pageHeaderCompact : {}) }}>
               <div>
-                <div style={d.greetingLabel}>Career</div>
+                <div style={{ ...d.greetingLabel, ...(compactViewport ? d.greetingLabelCompact : {}) }}>Career</div>
                 <div style={d.pageSub}>Track goals, certifications, applications, and next professional moves.</div>
               </div>
-              <div style={d.headerMetric}>
+              <div style={{ ...d.headerMetric, ...(compactViewport ? d.headerMetricCompact : {}) }}>
                 {completedCareerGoals}/{careerGoals.length} complete
               </div>
             </div>
@@ -733,15 +760,15 @@ export default function Dashboard() {
         {/* REPORTS TAB */}
         {activeTab === 'reports' && (
           <div style={contentStyle}>
-            <div style={d.pageHeader}>
+            <div style={{ ...d.pageHeader, ...(compactViewport ? d.pageHeaderCompact : {}) }}>
               <div>
-                <div style={d.greetingLabel}>Reports</div>
+                <div style={{ ...d.greetingLabel, ...(compactViewport ? d.greetingLabelCompact : {}) }}>Reports</div>
                 <div style={d.pageSub}>A monthly intelligence snapshot across work, money, network, and career.</div>
               </div>
-              <div style={d.headerMetric}>{reportScore}% signal</div>
+              <div style={{ ...d.headerMetric, ...(compactViewport ? d.headerMetricCompact : {}) }}>{reportScore}% signal</div>
             </div>
 
-            <div style={d.reportHero}>
+            <div style={{ ...d.reportHero, ...(isMobile ? d.reportHeroMobile : {}) }}>
               <div>
                 <div style={d.briefingTag}>MONTHLY INTELLIGENCE</div>
                 <div style={d.reportTitle}>Professional operating picture</div>
@@ -794,12 +821,12 @@ export default function Dashboard() {
         {/* SETTINGS TAB */}
         {activeTab === 'settings' && (
           <div style={contentStyle}>
-            <div style={d.pageHeader}>
+            <div style={{ ...d.pageHeader, ...(compactViewport ? d.pageHeaderCompact : {}) }}>
               <div>
-                <div style={d.greetingLabel}>Settings</div>
+                <div style={{ ...d.greetingLabel, ...(compactViewport ? d.greetingLabelCompact : {}) }}>Settings</div>
                 <div style={d.pageSub}>Control identity, notification behavior, and the way WorkAxis presents your workspace.</div>
               </div>
-              {settingsSaved && <div style={d.headerMetric}>{settingsSaved}</div>}
+              {settingsSaved && <div style={{ ...d.headerMetric, ...(compactViewport ? d.headerMetricCompact : {}) }}>{settingsSaved}</div>}
             </div>
 
             <div style={d.settingsGrid}>
@@ -897,30 +924,49 @@ export default function Dashboard() {
 
 const d = {
   root: { display: 'flex', height: '100vh', background: '#0e0e0e', fontFamily: 'Inter, Space Grotesk, sans-serif', color: '#f7f3eb', overflow: 'hidden' },
+  rootCompact: { flexDirection: 'column', height: '100svh', overflow: 'hidden' },
   sidebar: { width: 246, background: '#111', borderRight: '1px solid rgba(247,243,235,0.07)', display: 'flex', flexDirection: 'column', padding: '28px 16px', flexShrink: 0 },
+  sidebarCompact: { width: '100%', maxHeight: 164, borderRight: 'none', borderBottom: '1px solid rgba(247,243,235,0.07)', padding: '14px 14px 10px', overflowX: 'auto', overflowY: 'hidden', display: 'grid', gridTemplateColumns: 'auto', gridAutoFlow: 'column', gridAutoColumns: 'max-content', alignItems: 'center', gap: 8 },
+  sidebarMobile: { maxHeight: 148, padding: '12px 12px 9px' },
   sidebarLogo: { display: 'flex', alignItems: 'center', gap: 8, padding: '0 8px 24px', marginBottom: 4 },
+  sidebarLogoCompact: { padding: '0 10px', marginBottom: 0, height: 42 },
   logoDot: { width: 7, height: 7, borderRadius: '50%', background: '#f7f3eb' },
   logoWork: { fontSize: 17, fontWeight: 700, color: '#f7f3eb', letterSpacing: '3px', fontFamily: 'Newsreader, Cormorant Garamond, serif' },
   logoAxis: { fontSize: 17, fontWeight: 400, color: 'rgba(247,243,235,0.28)', letterSpacing: '3px', fontFamily: 'Newsreader, Cormorant Garamond, serif' },
   sidebarDivider: { height: 1, background: 'rgba(247,243,235,0.05)', marginBottom: 16 },
   sidebarItem: { display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', borderRadius: 6, fontSize: 13, color: 'rgba(247,243,235,0.44)', cursor: 'pointer', marginBottom: 4, transition: 'all 0.2s', letterSpacing: '0.1px', fontWeight: 600 },
+  sidebarItemCompact: { marginBottom: 0, height: 42, whiteSpace: 'nowrap', flexShrink: 0 },
+  sidebarItemMobile: { padding: '10px 12px', fontSize: 12 },
   sidebarActive: { background: 'rgba(247,243,235,0.07)', color: '#f7f3eb' },
   sidebarBottom: { marginTop: 'auto' },
+  sidebarBottomCompact: { display: 'none' },
   userInfo: { display: 'flex', alignItems: 'center', gap: 10, padding: '14px 8px', marginBottom: 12 },
   avatar: { width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' },
   userName: { fontSize: 13, fontWeight: 700, color: '#f7f3eb' },
   userEmail: { fontSize: 10, color: 'rgba(247,243,235,0.32)', marginTop: 2 },
   logoutBtn: { width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'transparent', border: '1px solid rgba(247,243,235,0.12)', color: 'rgba(247,243,235,0.38)', padding: '10px', fontSize: 10, letterSpacing: '1.6px', cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'Inter, Space Grotesk, sans-serif' },
+  logoutBtnCompact: { width: 'auto', height: 42, padding: '10px 14px' },
   main: { flex: 1, overflow: 'auto', background: '#0e0e0e' },
+  mainCompact: { width: '100%', minHeight: 0 },
   tabContent: { padding: '48px 56px', maxWidth: 1000 },
   tabContentCompact: { padding: '32px 42px', maxWidth: 1120 },
+  tabContentLaptop: { padding: '40px 44px', maxWidth: 1040 },
+  tabContentTablet: { padding: '30px 28px', maxWidth: '100%' },
+  tabContentMobile: { padding: '26px 18px 44px', maxWidth: '100%' },
   pageHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 40 },
+  pageHeaderCompact: { alignItems: 'flex-start', flexDirection: 'column', gap: 18, marginBottom: 28 },
   greetingLabel: { fontSize: 42, fontWeight: 600, color: '#f7f3eb', fontFamily: 'Newsreader, Cormorant Garamond, serif', letterSpacing: 0, animation: 'dashPhrase 420ms ease both' },
+  greetingLabelLaptop: { fontSize: 38 },
+  greetingLabelCompact: { fontSize: 32, lineHeight: 1.05 },
   greetingName: { fontSize: 58, fontWeight: 400, fontStyle: 'italic', color: 'rgba(247,243,235,0.38)', fontFamily: 'Newsreader, Cormorant Garamond, serif', letterSpacing: 0, lineHeight: 1, animation: 'dashPhrase 500ms ease both' },
+  greetingNameLaptop: { fontSize: 50 },
+  greetingNameCompact: { fontSize: 38, lineHeight: 1.04 },
   pageSub: { fontSize: 14, color: 'rgba(247,243,235,0.42)', marginTop: 10, lineHeight: 1.6, maxWidth: 460 },
   headerMetric: { fontSize: 28, fontWeight: 600, color: '#f7f3eb', fontFamily: 'Newsreader, Cormorant Garamond, serif' },
+  headerMetricCompact: { fontSize: 24 },
   refreshBtn: { display: 'inline-flex', alignItems: 'center', gap: 9, background: 'transparent', border: '1px solid rgba(247,243,235,0.12)', color: 'rgba(247,243,235,0.45)', padding: '10px 18px', fontSize: 11, letterSpacing: '0.8px', cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'Inter, Space Grotesk, sans-serif', fontWeight: 700 },
   reminderToast: { position: 'fixed', right: 28, bottom: 28, width: 390, maxWidth: 'calc(100vw - 56px)', display: 'flex', alignItems: 'center', gap: 14, background: 'rgba(18,18,18,0.96)', border: '1px solid rgba(247,243,235,0.15)', boxShadow: '0 26px 70px rgba(0,0,0,0.42)', padding: '18px 18px', zIndex: 50, borderRadius: 6, backdropFilter: 'blur(18px)' },
+  reminderToastMobile: { left: 14, right: 14, bottom: 14, width: 'auto', maxWidth: 'none', alignItems: 'flex-start' },
   reminderToastIcon: { width: 36, height: 36, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(247,243,235,0.06)', color: '#f7f3eb', flexShrink: 0 },
   reminderToastTitle: { fontSize: 10, color: 'rgba(247,243,235,0.44)', letterSpacing: 1.8, fontFamily: 'Space Mono, monospace', textTransform: 'uppercase', marginBottom: 5 },
   reminderToastText: { fontSize: 14, color: '#f7f3eb', fontWeight: 700, lineHeight: 1.35 },
@@ -935,6 +981,7 @@ const d = {
   briefingText: { display: 'flex', flexDirection: 'column', gap: 10 },
   briefingLine: { fontSize: 15, color: 'rgba(247,243,235,0.72)', lineHeight: 1.65, fontFamily: 'Inter, Space Grotesk, sans-serif' },
   statsRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16, marginBottom: 40 },
+  statsRowMobile: { gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 10, marginBottom: 28 },
   statCard: { background: 'rgba(247,243,235,0.018)', border: '1px solid rgba(247,243,235,0.07)', borderRadius: 6, padding: '22px 24px' },
   statVal: { fontSize: 34, fontWeight: 600, color: '#f7f3eb', letterSpacing: 0, fontFamily: 'Newsreader, Cormorant Garamond, serif', marginBottom: 6 },
   statLabel: { fontSize: 10, color: 'rgba(247,243,235,0.28)', letterSpacing: '1.4px', fontFamily: 'Space Mono, monospace', textTransform: 'uppercase' },
@@ -956,6 +1003,7 @@ const d = {
   input: { flex: 1, minWidth: 180, background: 'rgba(247,243,235,0.035)', border: '1px solid rgba(247,243,235,0.11)', color: '#f7f3eb', padding: '13px 18px', fontSize: 14, fontFamily: 'Inter, Space Grotesk, sans-serif', borderRadius: 4, caretColor: '#f7f3eb' },
   selectInput: { flex: '0 1 150px', minWidth: 140, background: 'rgba(247,243,235,0.035)', border: '1px solid rgba(247,243,235,0.11)', color: '#f7f3eb', padding: '13px 16px', fontSize: 13, fontFamily: 'Inter, Space Grotesk, sans-serif', borderRadius: 4, cursor: 'pointer' },
   addBtn: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#f7f3eb', color: '#0e0e0e', border: 'none', padding: '13px 24px', fontSize: 11, fontWeight: 800, letterSpacing: '1.4px', cursor: 'pointer', fontFamily: 'Inter, Space Grotesk, sans-serif', flexShrink: 0 },
+  fullWidthButton: { width: '100%' },
   secondaryBtn: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'transparent', color: 'rgba(247,243,235,0.52)', border: '1px solid rgba(247,243,235,0.12)', padding: '13px 18px', fontSize: 10, fontWeight: 800, letterSpacing: '1.2px', cursor: 'pointer', fontFamily: 'Inter, Space Grotesk, sans-serif', flexShrink: 0 },
   taskList: { display: 'flex', flexDirection: 'column', gap: 10 },
   taskCard: { display: 'flex', alignItems: 'center', gap: 14, background: 'rgba(247,243,235,0.018)', border: '1px solid rgba(247,243,235,0.06)', padding: '16px 20px', borderRadius: 6 },
@@ -969,6 +1017,7 @@ const d = {
   contactCompany: { fontSize: 11, color: 'rgba(245,245,245,0.2)', fontFamily: 'Space Mono, monospace' },
   emptyText: { fontSize: 13, color: 'rgba(245,245,245,0.2)', fontStyle: 'italic', padding: '20px 0', fontFamily: 'Newsreader, Cormorant Garamond, serif' },
   reportHero: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(247,243,235,0.018)', border: '1px solid rgba(247,243,235,0.07)', borderRadius: 6, padding: '28px 32px', marginBottom: 18 },
+  reportHeroMobile: { padding: '22px', alignItems: 'flex-start', gap: 18 },
   reportTitle: { fontSize: 30, color: '#f7f3eb', fontWeight: 600, fontFamily: 'Newsreader, Cormorant Garamond, serif', marginTop: 10 },
   reportGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 16, marginBottom: 34 },
   reportCard: { background: 'rgba(247,243,235,0.018)', border: '1px solid rgba(247,243,235,0.07)', borderRadius: 6, padding: '22px 24px' },
